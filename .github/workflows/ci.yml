@@ -1,0 +1,37 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        if: hashFiles('**/package.json') != ''
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        if: hashFiles('**/package.json') != ''
+        run: npm ci
+
+      - name: Run tests
+        if: hashFiles('**/package.json') != ''
+        run: npm test --if-present
+
+      - name: Lint (optional)
+        if: hashFiles('**/package.json') != ''
+        run: npm run lint --if-present
+
+      - name: No-op (no package.json found)
+        if: hashFiles('**/package.json') == ''
+        run: echo "No package.json found; skipping Node CI steps."
